@@ -44,6 +44,9 @@ function render() {
     const stopDrag = (event: PointerEvent) => { if (categoryBubbles.hasPointerCapture(event.pointerId)) categoryBubbles.releasePointerCapture(event.pointerId); categoryBubbles.classList.remove('dragging'); window.setTimeout(() => { categoryDragging = false; }, 0); };
     categoryBubbles.addEventListener('pointerup', stopDrag); categoryBubbles.addEventListener('pointercancel', stopDrag);
   }
+  const popupBrand = document.querySelector<HTMLElement>('.brand');
+  const popupMark = popupBrand?.querySelector<HTMLElement>('.brand-mark');
+  if (popupBrand && popupMark) { const logo = document.createElement('img'); logo.className = 'brand-logo'; logo.src = '../icons/logo.png'; logo.alt = 'JobFill logo'; logo.style.cssText = 'display:block;width:32px;height:32px;border-radius:10px;object-fit:cover'; popupBrand.replaceChild(logo, popupMark); }
   if (!location.pathname.includes('/dock/')) {
     const sideTabButton = document.createElement('button');
     sideTabButton.className = 'icon-button'; sideTabButton.id = 'side-tab-toggle';
