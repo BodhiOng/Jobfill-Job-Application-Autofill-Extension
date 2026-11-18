@@ -38,3 +38,28 @@ body.dark-mode.popup .search input{color:#f1f2f5}
 body.dark-mode.popup .field-row:hover{background:#2a2d37}
 body.dark-mode.popup footer{border-color:#343640}
 body.dark-mode.popup .secondary,body.dark-mode.popup .icon-button{background:#2b2e37;color:#f1f2f5}
+
+.settings-search-toggle{display:block;width:calc(100% - 20px);margin:0 10px 16px;padding:10px 12px;border:1px solid #454851;border-radius:8px;background:transparent;color:#c4c7cf;text-align:left;font-size:12px;cursor:pointer}
+.settings-search-toggle:hover{background:#333640;color:#fff}
+.settings-search{margin:0 10px 12px}
+.settings-search input{width:100%;padding:9px 10px;border:1px solid #454851;border-radius:7px;background:#2b2e37;color:#f1f2f5;font-size:12px;outline:0}
+.settings-search-results{display:grid;gap:3px;max-height:220px;margin-top:5px;padding:4px;border:1px solid #454851;border-radius:7px;background:#202229;overflow:auto}
+.settings-search-result{display:grid;gap:2px;padding:8px;border:0;border-radius:5px;background:transparent;color:#f1f2f5;text-align:left;cursor:pointer}
+.settings-search-result:hover{background:#393e4a}
+.settings-search-result strong{font-size:11px}
+.settings-search-result small,.settings-search-empty{color:#aeb3c0;font-size:10px}
+.settings-search-empty{margin:8px}
+.settings-global-search{position:relative;z-index:6;width:min(100%,520px);margin:0 0 18px}
+.settings-global-search input{width:100%;padding:11px 13px;border:1px solid #454851;border-radius:9px;background:#2b2e37;color:#f1f2f5;font-size:13px;outline:0}
+.settings-global-search input:focus{border-color:#8874e8;box-shadow:0 0 0 2px #8874e833}
+.skills-hint{margin:0 0 14px;color:#777d89;font-size:13px}
+body.dark-mode .skills-hint{color:#aeb3c0}
+.settings-global-search .settings-search-results{position:absolute;top:calc(100% + 5px);left:0;right:0;max-height:260px;box-shadow:0 12px 28px #0005}
+body:not(.dark-mode) .settings-global-search input{border-color:#e3e3e8;background:#fff;color:#333}
+body:not(.dark-mode) .settings-global-search input::placeholder{color:#888e99}
+body:not(.dark-mode) .settings-global-search .settings-search-results{border-color:#dedee7;background:#fff;box-shadow:0 12px 28px #15161b22}
+body:not(.dark-mode) .settings-global-search .settings-search-result{color:#333}
+body:not(.dark-mode) .settings-global-search .settings-search-result:hover{background:#f0eff8}
+body:not(.dark-mode) .settings-global-search .settings-search-result small,body:not(.dark-mode) .settings-global-search .settings-search-empty{color:#777d89}
+.search-highlight{animation:search-highlight 1.8s ease-out}
+@keyframes search-highlight{0%{box-shadow:0 0 0 3px #8b76e8 inset;background:#39315b}100%{box-shadow:none}}

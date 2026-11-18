@@ -21,13 +21,12 @@ const DEFAULT_FIELDS: Array<Pick<ProfileField, 'id' | 'label' | 'section' | 'typ
   { id: 'postal-code', label: 'Postal code', section: 'address', type: 'text', aliases: ['zip code', 'postcode', 'kode pos'] },
   { id: 'country', label: 'Country', section: 'address', type: 'text', aliases: ['negara'] },
   { id: 'university', label: 'University / School', section: 'education', type: 'text', aliases: ['education', 'school', 'universitas', 'sekolah'] },
-  { id: 'degree', label: 'Degree', section: 'education', type: 'text', aliases: ['qualification', 'gelar'] },
+  { id: 'degree', label: 'Degree', section: 'education', type: 'select', options: ['High school', 'Certificate', 'Diploma', "Associate's degree", "Bachelor's degree", "Master's degree", 'Doctorate', 'Other'], aliases: ['qualification', 'gelar'] },
   { id: 'field-of-study', label: 'Field of study', section: 'education', type: 'text', aliases: ['major', 'jurusan', 'program studi'] },
-  { id: 'employer', label: 'Company / Employer', section: 'employment', type: 'text', aliases: ['company', 'perusahaan'] },
-  { id: 'job-title', label: 'Job title', section: 'employment', type: 'text', aliases: ['position', 'role', 'jabatan', 'posisi'] },
+  { id: 'experience-1-company', label: 'Experience 1 - Company', section: 'experience', type: 'text', aliases: ['company', 'employer', 'perusahaan'] },
   { id: 'experience-1-job-title', label: 'Experience 1 - Job title', section: 'experience', type: 'text', aliases: ['position', 'role', 'jabatan', 'posisi'] },
-  { id: 'experience-1-start', label: 'Experience 1 - Start month', section: 'experience', type: 'month', aliases: ['start date', 'mulai bekerja', 'tanggal mulai'] },
-  { id: 'experience-1-end', label: 'Experience 1 - End month', section: 'experience', type: 'month', aliases: ['end date', 'tanggal selesai'] },
+  { id: 'experience-1-start', label: 'Experience 1 - Start month / year', section: 'experience', type: 'month', aliases: ['start date', 'start month', 'mulai bekerja', 'tanggal mulai'] },
+  { id: 'experience-1-end', label: 'Experience 1 - End month / year', section: 'experience', type: 'month', aliases: ['end date', 'end month', 'tanggal selesai'] },
   { id: 'experience-1-description', label: 'Experience 1 - Description', section: 'experience', type: 'textarea', aliases: ['responsibilities', 'deskripsi pekerjaan', 'tanggung jawab'] },
   { id: 'experience-1-type', label: 'Experience 1 - Work type', section: 'experience', type: 'select', options: ['Full-time', 'Part-time', 'Internship', 'Freelance', 'Contract', 'Volunteer'], aliases: ['employment type', 'job type', 'jenis pekerjaan', 'tipe pekerjaan'] },
   { id: 'linkedin', label: 'LinkedIn URL', section: 'links', type: 'url', aliases: ['linkedin profile', 'profil linkedin'] },
@@ -52,9 +51,15 @@ export async function loadProfile(): Promise<Profile> {
   const stored = result[STORAGE_KEY] as Profile | undefined;
   if (stored?.version === 1 && Array.isArray(stored.fields)) {
     const defaults = emptyProfile().fields;
-    const normalized = removeUntouchedLegacyPlaceholders(stored.fields.map((field) => ({ ...field, base: field.base ?? defaults.find((item) => item.id === field.id)?.base ?? false, showInPopup: field.showInPopup !== false })));
+    const legacyEmployer = stored.fields.find((field) => field.id === 'employer' || field.id === 'job-title' || field.section === 'employment');
+    const normalized = removeUntouchedLegacyPlaceholders(stored.fields.filter((field) => field.section !== 'employment').map((field) => ({ ...field, base: field.id.startsWith('experience-') ? false : field.base ?? defaults.find((item) => item.id === field.id)?.base ?? false, showInPopup: field.showInPopup !== false })));
     const missing = defaults.filter((field) => !normalized.some((saved) => saved.id === field.id));
     const migrated = { ...stored, fields: [...normalized, ...missing] };
+    const degree = migrated.fields.find((field) => field.id === 'degree');
+    const degreeDefault = defaults.find((field) => field.id === 'degree');
+    if (degree && degreeDefault) { degree.type = 'select'; degree.options = degreeDefault.options; }
+    const company = migrated.fields.find((field) => field.id === 'experience-1-company');
+    if (company && legacyEmployer?.value && !company.value) company.value = legacyEmployer.value;
     if (JSON.stringify(migrated.fields) !== JSON.stringify(stored.fields)) await saveProfile(migrated);
     return migrated;
   }

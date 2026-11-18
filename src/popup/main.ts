@@ -18,6 +18,7 @@ function render() {
   const fields = profile.fields.filter((field) => { const searchable = `${field.label} ${field.value} ${sectionLabel(field.section)} ${(field.aliases ?? []).join(' ')}`.toLowerCase(); return field.showInPopup !== false && (searchTerm ? searchable.includes(searchTerm) : field.section === activeSection); });
   const grouped = fields.reduce<Record<string, typeof fields>>((groups, field) => { (groups[field.section] ??= []).push(field); return groups; }, {});
   app.innerHTML = `<header class="popup-header"><div class="brand"><span class="brand-mark">J</span><div><h1>JobFill</h1><p>Private by default</p></div></div><div class="popup-actions"><button class="icon-button" id="theme" title="Toggle theme">${document.body.classList.contains('dark-mode') ? '☀' : '◐'}</button><button class="icon-button" id="settings" title="Open settings">⚙</button></div></header><section class="hero"><div><p class="eyebrow">YOUR PROFILE</p><h2>Ready when you are.</h2><p class="muted">Click any field to copy its value, then paste it into a form or message.</p></div><span class="status-dot"></span></section><div class="actions"><button class="primary" id="fill">✦ Fill this page</button><button class="secondary" id="overwrite">↻ Overwrite</button>${location.pathname.includes('/dock/') ? '' : '<button class="secondary" id="dock">▣ Dock</button>'}</div><label class="search"><span>⌕</span><input id="search" placeholder="Search your information" value="${esc(query)}"></label><div class="category-bubbles">${availableSections.map((section) => `<button class="category-bubble ${activeSection === section ? 'active' : ''}" data-category="${section}">${sectionLabel(section)}</button>`).join('')}</div><div class="profile-list">${Object.entries(grouped).map(([section, items]) => `<section class="field-group"><div class="group-title">${sectionLabel(section as ProfileSection)}<span>${items.length}</span></div>${items.map((field) => `<button class="field-row ${field.value.trim() ? '' : 'unfilled'}" data-copy="${esc(field.value)}" title="Click to copy"><span><strong>${esc(field.label)}</strong><small>${field.value.trim() ? esc(field.value) : 'Not filled yet'}</small></span></button>`).join('')}</section>`).join('') || '<div class="empty">No fields are enabled for this category.<br>Enable fields in settings if needed.</div>'}</div><footer><span>${profile.fields.filter((field) => field.value.trim()).length} saved values</span><button id="manage">Manage profile →</button></footer>`;
+  expandSkillRows(fields);
   const categoryBubbles = document.querySelector<HTMLElement>('.category-bubbles');
   if (categoryBubbles) {
     const strip = document.createElement('div');
@@ -69,6 +70,29 @@ function render() {
   document.querySelector('#fill')?.addEventListener('click', () => sendFill(false));
   document.querySelector('#overwrite')?.addEventListener('click', () => sendFill(true));
   document.querySelector('#dock')?.addEventListener('click', () => toggleDock());
+}
+
+function splitSkills(value: string): string[] { return value.split(/[,;\n]/).map((skill) => skill.trim()).filter(Boolean); }
+function expandSkillRows(fields: Profile['fields']) {
+  const skillFields = fields.filter((field) => field.id === 'skills' || field.label.toLowerCase() === 'technical skills');
+  app.querySelectorAll<HTMLElement>('.field-row').forEach((row) => {
+    const label = row.querySelector('strong')?.textContent;
+    const field = skillFields.find((item) => item.label === label);
+    if (!field) return;
+    const skills = splitSkills(field.value);
+    if (skills.length <= 1) return;
+    const fragment = document.createDocumentFragment();
+    skills.forEach((skill) => {
+      const skillRow = row.cloneNode(true) as HTMLElement;
+      skillRow.dataset.copy = skill;
+      skillRow.classList.remove('unfilled');
+      const strong = skillRow.querySelector('strong');
+      if (strong) strong.textContent = skill;
+      skillRow.querySelector('small')?.remove();
+      fragment.append(skillRow);
+    });
+    row.replaceWith(fragment);
+  });
 }
 
 async function sendFill(overwrite: boolean) { const button = document.querySelector<HTMLButtonElement>(overwrite ? '#overwrite' : '#fill'); if (button) { button.disabled = true; button.textContent = 'Working…'; } try { const tabs = await extensionBrowser.tabs.query({ active: true, currentWindow: true }); const tab = tabs[0]; const result = tab.id ? await extensionBrowser.tabs.sendMessage(tab.id, { type: 'jobfill-fill', overwrite }) : undefined; if (button) button.textContent = result?.filled ? `Filled ${result.filled} fields` : 'No matching fields'; } catch { if (button) button.textContent = 'Open a web page first'; } setTimeout(() => { if (button) { button.disabled = false; button.textContent = overwrite ? '↻ Overwrite' : '✦ Fill this page'; } }, 1800); }
