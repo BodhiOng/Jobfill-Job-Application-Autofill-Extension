@@ -47,7 +47,7 @@ function ensureLauncher() {
   launcherButton.type = 'button';
   launcherButton.title = 'Open JobFill';
   launcherButton.textContent = 'JOBFILL';
-  launcherButton.setAttribute('style', 'all:initial!important;position:fixed!important;z-index:2147483648!important;top:42%!important;right:0!important;width:34px!important;height:88px!important;border:1px solid #8d78ed!important;border-right:0!important;border-radius:12px 0 0 12px!important;background:#7058dd!important;color:#fff!important;box-shadow:0 8px 24px #241a5c66!important;font:800 12px system-ui,sans-serif!important;cursor:pointer!important;writing-mode:vertical-rl!important;letter-spacing:.08em!important;display:grid!important;place-items:center!important;visibility:visible!important;opacity:1!important;');
+  launcherButton.setAttribute('style', 'all:initial!important;position:fixed!important;z-index:2147483646!important;top:42%!important;right:0!important;width:34px!important;height:88px!important;border:1px solid #8d78ed!important;border-right:0!important;border-radius:12px 0 0 12px!important;background:#7058dd!important;color:#fff!important;box-shadow:0 8px 24px #241a5c66!important;font:800 12px system-ui,sans-serif!important;cursor:pointer!important;writing-mode:vertical-rl!important;letter-spacing:.08em!important;display:grid!important;place-items:center!important;visibility:visible!important;opacity:1!important;');
   launcher.appendChild(launcherButton);
   launcherButton?.addEventListener('click', () => { void toggleDock(); });
 }
