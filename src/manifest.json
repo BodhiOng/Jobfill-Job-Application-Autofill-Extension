@@ -3,6 +3,12 @@
   "name": "JobFill",
   "version": "1.0.0",
   "description": "Copy and fill job application information locally and safely.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "{8b8e9e2d-3a90-4a9a-9f21-0ddf7dd8f6b4}",
+      "strict_min_version": "120.0"
+    }
+  },
   "icons": { "16": "icons/logo.png", "32": "icons/logo.png", "48": "icons/logo.png", "128": "icons/logo.png" },
   "permissions": ["storage", "activeTab", "tabs"],
   "browser_action": { "default_title": "JobFill", "default_popup": "popup/index.html" },
