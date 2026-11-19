@@ -7,7 +7,8 @@ html,
 body.popup,
 body.popup #app,
 body.popup.dock-page,
-body.popup.sidebar-page {
+body.popup.sidebar-page,
+body.popup .popup {
   border: 0 !important;
   outline: 0 !important;
   box-shadow: none !important;
@@ -16,7 +17,16 @@ body.popup.sidebar-page {
 body.dark-mode.popup,
 body.dark-mode.popup #app,
 body.dark-mode.popup.dock-page,
-body.dark-mode.popup.sidebar-page {
+body.dark-mode.popup.sidebar-page,
+body.dark-mode.popup .popup {
+  border: 0 !important;
   border-color: transparent !important;
-  outline-color: transparent !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+body.dark-mode.popup .popup,
+body.dark-mode.popup.dock-page #app,
+body.dark-mode.popup.sidebar-page #app {
+  background: #15161b !important;
 }

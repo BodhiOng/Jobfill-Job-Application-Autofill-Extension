@@ -13,7 +13,6 @@ const DEFAULT_FIELDS: Array<Pick<ProfileField, 'id' | 'label' | 'section' | 'typ
   { id: 'date-of-birth', label: 'Date of birth', section: 'personal', type: 'date', aliases: ['birthday', 'tanggal lahir'] },
   { id: 'nationality', label: 'Nationality', section: 'personal', type: 'text', aliases: ['citizenship', 'kewarganegaraan'] },
   { id: 'email', label: 'Email', section: 'contact', type: 'email', aliases: ['email address', 'alamat email', 'surel'] },
-  { id: 'phone-country-code', label: 'Phone country code', section: 'contact', type: 'tel', aliases: ['country calling code', 'kode negara telepon'] },
   { id: 'phone', label: 'Phone number', section: 'contact', type: 'tel', aliases: ['mobile', 'telephone', 'nomor telepon', 'no hp', 'include country code'] },
   { id: 'address', label: 'Address', section: 'address', type: 'textarea', aliases: ['home address', 'alamat', 'alamat rumah'] },
   { id: 'city', label: 'City', section: 'address', type: 'text', aliases: ['town', 'kota'] },
@@ -52,7 +51,7 @@ export async function loadProfile(): Promise<Profile> {
   if (stored?.version === 1 && Array.isArray(stored.fields)) {
     const defaults = emptyProfile().fields;
     const legacyEmployer = stored.fields.find((field) => field.id === 'employer' || field.id === 'job-title' || field.section === 'employment');
-    const normalized = removeUntouchedLegacyPlaceholders(stored.fields.filter((field) => field.section !== 'employment').map((field) => ({ ...field, base: field.id.startsWith('experience-') ? false : field.base ?? defaults.find((item) => item.id === field.id)?.base ?? false, showInPopup: field.showInPopup !== false })));
+    const normalized = removeUntouchedLegacyPlaceholders(stored.fields.filter((field) => field.section !== 'employment' && field.id !== 'phone-country-code').map((field) => ({ ...field, base: field.id.startsWith('experience-') ? false : field.base ?? defaults.find((item) => item.id === field.id)?.base ?? false, showInPopup: field.showInPopup !== false })));
     const missing = defaults.filter((field) => !normalized.some((saved) => saved.id === field.id));
     const migrated = { ...stored, fields: [...normalized, ...missing] };
     const degree = migrated.fields.find((field) => field.id === 'degree');
@@ -71,4 +70,4 @@ export async function loadProfile(): Promise<Profile> {
 export async function saveProfile(profile: Profile): Promise<void> { await extensionBrowser.storage.local.set({ [STORAGE_KEY]: { ...profile, updatedAt: new Date().toISOString() } }); }
 export function makeField(partial: Partial<ProfileField> = {}): ProfileField { return { id: crypto.randomUUID(), label: 'New field', value: '', section: 'custom', aliases: [], type: 'text', enabled: true, base: false, showInPopup: true, ...partial }; }
 export async function exportProfile(): Promise<string> { return JSON.stringify(await loadProfile(), null, 2); }
-export async function importProfile(json: string): Promise<Profile> { const parsed = JSON.parse(json) as Partial<Profile>; if (parsed.version !== 1 || !Array.isArray(parsed.fields)) throw new Error('This file is not a valid JobFill backup.'); const profile: Profile = { version: 1, fields: parsed.fields.map((field) => makeField(field)), mappings: parsed.mappings ?? {}, updatedAt: new Date().toISOString() }; await saveProfile(profile); return profile; }
+export async function importProfile(json: string): Promise<Profile> { const parsed = JSON.parse(json) as Partial<Profile>; if (parsed.version !== 1 || !Array.isArray(parsed.fields)) throw new Error('This file is not a valid JobFill backup.'); const profile: Profile = { version: 1, fields: parsed.fields.filter((field) => field.id !== 'phone-country-code').map((field) => makeField(field)), mappings: parsed.mappings ?? {}, updatedAt: new Date().toISOString() }; await saveProfile(profile); return profile; }

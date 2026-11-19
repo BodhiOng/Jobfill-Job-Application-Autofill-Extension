@@ -1,7 +1,7 @@
 import type { MatchResult, Profile, ProfileField } from './types';
 
 const STOP_WORDS = new Set(['the', 'your', 'and', 'for', 'of', 'a', 'an', 'please', 'enter', 'field', 'yang', 'anda']);
-const normalize = (value: string) => value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/[^a-z0-9]+/g, ' ').trim();
+const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 const tokens = (value: string) => normalize(value).split(' ').filter((token) => token && !STOP_WORDS.has(token));
 
 const BILINGUAL_GROUPS = [
@@ -19,10 +19,33 @@ const BILINGUAL_GROUPS = [
 function getText(element: Element): string {
   const input = element as HTMLInputElement;
   const chunks = [input.name, input.id, input.placeholder, input.autocomplete, input.getAttribute('aria-label') ?? ''];
-  if (input.id) { const label = document.querySelector(`label[for="${CSS.escape(input.id)}"]`)?.textContent; if (label) chunks.push(label); }
+  const labelledBy = input.getAttribute('aria-labelledby')?.split(/\s+/).filter(Boolean) ?? [];
+  for (const id of labelledBy) { const label = input.ownerDocument.getElementById(id)?.textContent; if (label) chunks.push(label); }
+  if (input.id) { const label = input.ownerDocument.querySelector(`label[for="${CSS.escape(input.id)}"]`)?.textContent; if (label) chunks.push(label); }
   const parentLabel = input.closest('label')?.textContent;
   if (parentLabel) chunks.push(parentLabel);
+  const legend = input.closest('fieldset')?.querySelector('legend')?.textContent;
+  if (legend) chunks.push(legend);
+  const group = input.closest('.form-group, [role="group"], [class*="field-group"], [class*="form-control"]');
+  if (group) chunks.push(group.textContent ?? '');
   return chunks.filter(Boolean).join(' ');
+}
+
+function isCompatible(element: Element, field: ProfileField): boolean {
+  const input = element as HTMLInputElement;
+  // Native dropdowns are often used for fields saved as text (country,
+  // nationality, gender, etc.), so do not require the profile field itself
+  // to be typed as `select`.
+  if (element instanceof HTMLSelectElement) return field.type !== 'textarea';
+  if (element instanceof HTMLTextAreaElement) return field.type !== 'select';
+  const inputType = input.type.toLowerCase();
+  if (field.type === 'select') return inputType === 'text' || inputType === 'search';
+  if (field.type === 'email') return inputType === 'email' || inputType === 'text' || inputType === 'search';
+  if (field.type === 'tel') return inputType === 'tel' || inputType === 'text' || inputType === 'search';
+  if (field.type === 'url') return inputType === 'url' || inputType === 'text' || inputType === 'search';
+  if (field.type === 'date') return inputType === 'date' || inputType === 'text' || inputType === 'search';
+  if (field.type === 'month') return inputType === 'month' || inputType === 'text' || inputType === 'search';
+  return !['date', 'month', 'time', 'number'].includes(inputType) || field.type === inputType;
 }
 
 function expandedNames(field: ProfileField): string[] {
@@ -37,6 +60,7 @@ export function bestMatch(element: Element, profile: Profile): MatchResult | und
   const sourceTokens = new Set(tokens(source));
   let best: MatchResult | undefined;
   for (const field of profile.fields.filter((item) => item.enabled !== false && item.value.trim())) {
+    if (!isCompatible(element, field)) continue;
     let score = 0; let reason = '';
     for (const name of expandedNames(field)) {
       const normalized = normalize(name);
