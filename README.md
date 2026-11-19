@@ -10,8 +10,6 @@ JobFill is a Firefox-first, local-only browser extension for copying profile inf
 - Separate work-experience cards with company, job title, start date, end date, description, and work type.
 - Technical skills stored as comma-separated values and shown as individual copyable items in the popup.
 - Local JSON backup import/export.
-- Local reusable files for resume, cover letter, and profile picture.
-- Browser-based file viewer for stored files when supported by the browser.
 - Dark/light theme preference shared by the popup and settings page.
 - Firefox docked iframe interface with page-width adjustment, minimize behavior, and refresh support.
 - Explicit autofill action. Fields are never changed merely because a page is opened.
